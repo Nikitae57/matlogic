@@ -86,7 +86,6 @@ bool isVariable(char character) {
 }
 
 int main() {
-    stack<char> varsStack = stack<char>();
     stack<Operation> operationStack = stack<Operation>();
 
     string expression;
@@ -97,15 +96,12 @@ int main() {
     for (int i = 0; i < expression.length(); i++) {
         if (isVariable(expression[i])) {
             postfixExpr += expression[i];
-            continue;
-        }
 
-        if (expression[i] == '!' || expression[i] == '(') {
+        } else if (expression[i] == '!' || expression[i] == '(') {
             operationStack.push(Operation::create(expression[i]));
             continue;
-        }
 
-        if (expression[i] == ')') {
+        } else if (expression[i] == ')') {
             checkStack(operationStack);
 
             char topOperatorChar;
@@ -117,23 +113,25 @@ int main() {
             }
             operationStack.pop();
             continue;
-        }
 
-        // binary operation
-        Operation operation = Operation::create(expression[i]);
-        if (operationStack.size() == 0) {
+        } else {
+            // binary operation
+            Operation operation = Operation::create(expression[i]);
+            Operation topOperation;
+            while (operationStack.size() > 0) {
+                topOperation = operationStack.top();
+
+                if (topOperation.operatorChar == '!'
+                        || topOperation.priority >= operation.priority) {
+
+                    postfixExpr += topOperation.operatorChar;
+                    operationStack.pop();
+                } else {
+                    break;
+                }
+            }
             operationStack.push(operation);
-            continue;
         }
-
-        Operation topOperation = operationStack.top();
-        while (topOperation.operatorChar == '!'
-               || topOperation.priority >= operation.priority) {
-
-            postfixExpr += topOperation.operatorChar;
-            operationStack.pop();
-        }
-        operationStack.push(operation);
     }
 
     while (operationStack.size() > 0) {
