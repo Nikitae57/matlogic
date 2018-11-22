@@ -1,5 +1,8 @@
 #include <iostream>
 #include <stack>
+#include <vector>
+#include <algorithm>
+#include <bitset>
 
 using namespace std;
 
@@ -66,6 +69,40 @@ bool stackIsEmpty(stack<Operation> st) {
     }
 
     return false;
+}
+
+template<typename T> bool contains(vector<T> vec, T charToSearchFor) {
+    return find(vec.begin(), vec.end(), charToSearchFor) < vec.end();
+}
+
+string intToBinaryString(int i) {
+    vector<bool> vec = vector<bool>();
+    while (i > 0) {
+        vec.push_back(i % 2);
+        i = i >> 1;
+    }
+
+    string result = "";
+    for (int i = vec.size() - 1; i >= 0; i--) {
+        if (vec.at(i)) {
+            result += '1';
+        } else {
+            result += '0';
+        }
+    }
+
+    return result;
+}
+
+string intToBinaryString(int i, int capacity) {
+    string str = intToBinaryString(i);
+    string leadingZeros = "";
+
+    for (int i = 0; i < capacity - str.length(); i++) {
+        leadingZeros += '0';
+    }
+
+    return leadingZeros + str;
 }
 
 void checkStack(stack<Operation> st) {
@@ -138,7 +175,44 @@ int main() {
         postfixExpr += operationStack.top().operatorChar;
         operationStack.pop();
     }
-    cout << postfixExpr;
+
+    cout << "Postfix representation:" << endl;
+    cout << postfixExpr << endl << endl;
+
+    vector<char> variableSet = vector<char>();
+    for (int i = 0; i < expression.length(); i++) {
+        if (!isVariable(expression[i])) { continue; }
+
+        if (!contains(variableSet, expression[i])) {
+            variableSet.push_back(expression[i]);
+        }
+    }
+
+    int numberOfVariables = variableSet.size();
+    int table[numberOfVariables][1 << numberOfVariables];
+    string binaryStr;
+    for (int j = 0; j < (1 << numberOfVariables); j++) {
+        binaryStr = intToBinaryString(j, numberOfVariables);
+
+        for (int i = 0; i < numberOfVariables; i++) {
+            table[i][j] = binaryStr[i] - '0';
+        }
+    }
+
+    string str = postfixExpr;
+    for (int j = 0; j < (1 << numberOfVariables); j++) {
+        for (int i = 0; i < postfixExpr.size(); i++) {
+            if (!isVariable(postfixExpr[i])) { continue; }
+
+            int pos = find(variableSet.begin(), variableSet.end(), postfixExpr[i]) - variableSet.begin();
+            str[i] = table[pos][j] + '0';
+        }
+
+        // ТУТ
+        cout << str << endl;
+        str = postfixExpr;
+    }
+
 
     return 0;
 }
