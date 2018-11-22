@@ -189,7 +189,8 @@ int main() {
     }
 
     int numberOfVariables = variableSet.size();
-    int table[numberOfVariables][1 << numberOfVariables];
+    //int table[numberOfVariables][1 << numberOfVariables];
+    vector<vector<int>> table(numberOfVariables, vector<int>(1 << numberOfVariables));
     string binaryStr;
     for (int j = 0; j < (1 << numberOfVariables); j++) {
         binaryStr = intToBinaryString(j, numberOfVariables);
@@ -198,6 +199,17 @@ int main() {
             table[i][j] = binaryStr[i] - '0';
         }
     }
+
+    for (char &operand : variableSet) {
+        cout << operand << ' ';
+    }
+
+    for (char &elemOfExpr : postfixExpr) {
+        if (!isVariable(elemOfExpr)) {
+            cout << elemOfExpr << ' ';
+        }
+    }
+    cout << endl;
 
     string str = postfixExpr;
     for (int j = 0; j < (1 << numberOfVariables); j++) {
@@ -208,11 +220,86 @@ int main() {
             str[i] = table[pos][j] + '0';
         }
 
-        // ТУТ
-        cout << str << endl;
+        for (int i = 0; i < table.size(); i++) {
+            cout << table[i][j] << ' ';
+        }
+
+        stack<int> stk;
+        bool oper1, oper2;
+
+        for (char &element : str) {
+
+            switch (element)
+            {
+            case '+':
+                oper1 = stk.top();
+                stk.pop();
+                oper2 = stk.top();
+                stk.pop();
+
+                oper1 |= oper2;
+                cout << oper1 << ' ';
+                stk.push(oper1);
+                break;
+
+            case '*':
+                oper1 = stk.top();
+                stk.pop();
+                oper2 = stk.top();
+                stk.pop();
+
+                oper1 &= oper2;
+                cout << oper1 << ' ';
+                stk.push(oper1);
+                break;
+
+            case '!':
+                oper1 = stk.top();
+                stk.pop();
+
+                oper1 = !oper1;
+                cout << oper1 << ' ';
+                stk.push(oper1);
+                break;
+
+            case '>':
+                oper1 = stk.top();
+                stk.pop();
+                oper2 = stk.top();
+                stk.pop();
+
+                oper1 = !oper1 | oper2;
+                cout << oper1 << ' ';
+                stk.push(oper1);
+                break;
+
+            case '=':
+                oper1 = stk.top();
+                stk.pop();
+                oper2 = stk.top();
+                stk.pop();
+
+                oper1 = (oper1 | !oper2) & (!oper1 | oper2);
+                cout << oper1 << ' ';
+                stk.push(oper1);
+                break;
+
+            default:
+                if (element == '0') {
+                    stk.push(0);
+                }
+                else {
+                    stk.push(1);
+                }
+                break;
+            }
+
+        }
+
+        cout << endl;
         str = postfixExpr;
     }
 
-
+    //system("pause");
     return 0;
 }
